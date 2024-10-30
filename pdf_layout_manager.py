@@ -137,13 +137,68 @@ class PDFLayoutManager:
             print(traceback.format_exc())
             return None
 
-    # Rest of the methods remain unchanged
-    def process_pdf(self, image_path):
+    def create_team_slide(self, team_image_path):
         try:
-            first_page = self.create_first_page(None, image_path)
+            packet = io.BytesIO()
+            can = canvas.Canvas(packet, pagesize=(self.page_width, self.page_height))
+            
+            # White background
+            can.setFillColor(HexColor('#FFFFFF'))
+            can.rect(0, 0, self.page_width, self.page_height, fill=1)
+            
+            # Add Glossary Header
+            y_position = self.page_height - 50
+            can.setFillColor(HexColor('#1A1A1A'))
+            can.setFont("Helvetica-Bold", 20)
+            can.drawString(50, y_position, "Glossary")
+            
+            # Add line under header
+            can.setStrokeColor(HexColor('#E5E7EB'))
+            can.setLineWidth(1)
+            can.line(50, y_position - 10, self.page_width - 50, y_position - 10)
+            
+            if team_image_path and os.path.exists(team_image_path):
+                img = Image.open(team_image_path)
+                img_width, img_height = img.size
+                
+                # Calculate dimensions to fit width while maintaining aspect ratio
+                target_width = self.page_width - 80  # 40px margin on each side
+                scale_factor = target_width / img_width
+                new_width = target_width
+                new_height = img_height * scale_factor
+                
+                # If height is too large, scale based on height instead
+                max_height = self.page_height - 150  # Additional space for header
+                if new_height > max_height:
+                    scale_factor = max_height / img_height
+                    new_width = img_width * scale_factor
+                    new_height = max_height
+                
+                # Center the image below the header
+                x_position = (self.page_width - new_width) / 2
+                y_position = y_position - new_height - 40  # Space below header
+                
+                # Draw image without shadow
+                can.drawImage(team_image_path, x_position, y_position,
+                            width=new_width, height=new_height,
+                            preserveAspectRatio=True)
+            
+            can.save()
+            packet.seek(0)
+            return PdfReader(packet)
+        except Exception as e:
+            print(f"Error creating team slide: {str(e)}")
+            print(traceback.format_exc())
+            return None
+
+    def process_pdf(self, cover_image_path):
+        try:
+            # Add first page
+            first_page = self.create_first_page(None, cover_image_path)
             if first_page:
                 self.writer.add_page(first_page.pages[0])
             
+            # Add content pages
             target_text = "Non-Branded KPI Trends"
             start_page = None
             
@@ -156,6 +211,15 @@ class PDFLayoutManager:
             if start_page is not None:
                 for i in range(start_page, len(self.reader.pages)):
                     self.writer.add_page(self.reader.pages[i])
+            
+            # Add team slide at the end
+            inputs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'inputs')
+            team_slide_path = os.path.join(inputs_dir, 'team-slide.png')
+            
+            if os.path.exists(team_slide_path):
+                team_slide = self.create_team_slide(team_slide_path)
+                if team_slide:
+                    self.writer.add_page(team_slide.pages[0])
             
             return True
         except Exception as e:
@@ -173,7 +237,6 @@ class PDFLayoutManager:
             print(traceback.format_exc())
             return False
 
-# Rest of the code remains unchanged
 def find_latest_files():
     try:
         inputs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'inputs')
@@ -193,7 +256,11 @@ def find_latest_files():
             return None, None
         
         latest_pdf = max(pdf_files, key=os.path.getctime)
-        latest_image = max(image_files, key=os.path.getctime)
+        # Find the cover image (exclude team-slide.png)
+        cover_images = [f for f in image_files if os.path.basename(f).lower() != 'team-slide.png']
+        if not cover_images:
+            return None, None
+        latest_image = max(cover_images, key=os.path.getctime)
         
         return latest_pdf, latest_image
     except Exception as e:
