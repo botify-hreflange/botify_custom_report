@@ -17,8 +17,12 @@ class PDFLayoutManager:
         try:
             self.reader = PdfReader(input_pdf_path)
             self.writer = PdfWriter()
-            self.page_width = 612
-            self.page_height = 792
+            
+            # Get page size from input PDF
+            first_page = self.reader.pages[0]
+            self.page_width = float(first_page.mediabox.width)
+            self.page_height = float(first_page.mediabox.height)
+            
             if len(self.reader.pages) == 0:
                 raise ValueError("PDF has no pages")
         except Exception as e:
@@ -39,31 +43,31 @@ class PDFLayoutManager:
             
             # Header - Botify logo
             can.setFillColor(HexColor('#6B46C1'))
-            can.setFont("Helvetica-Bold", 28)  # Slightly smaller logo
+            can.setFont("Helvetica-Bold", 36)  # Increased from 28
             logo_text = "botify"
-            logo_width = can.stringWidth(logo_text, "Helvetica-Bold", 28)
+            logo_width = can.stringWidth(logo_text, "Helvetica-Bold", 36)
             can.drawString(50, y_position, logo_text)
             
             # Title with adjusted size
             can.setFillColor(HexColor('#1A1A1A'))
-            can.setFont("Helvetica-Bold", 20)  # Smaller title
+            can.setFont("Helvetica-Bold", 28)  # Increased from 20
             title = "David's Bridal Executive Summary"
             can.drawString(50 + logo_width + 15, y_position + 5, title)
             
             # Tracker sheet link with reduced spacing
-            y_position -= 25  # Reduced spacing
-            can.setFont("Helvetica", 10)  # Smaller link text
+            y_position -= 30  # Increased spacing
+            can.setFont("Helvetica", 14)  # Increased from 10
             can.setFillColor(HexColor('#2563EB'))
             link_text = "David's Bridal Project Tracker Sheet"
             link_url = "https://docs.google.com/spreadsheets/d/1HMzI-RnBOOZZjTNa9BvBcbpBDSD8ZP-rEctoP-e25ZE/edit?gid=1098252974#gid=1098252974"
             can.drawString(50, y_position, link_text)
-            text_width = can.stringWidth(link_text, "Helvetica", 10)
+            text_width = can.stringWidth(link_text, "Helvetica", 14)
             can.line(50, y_position - 1, 50 + text_width, y_position - 1)
             can.linkURL(link_url, (50, y_position - 2, 50 + text_width, y_position + 8))
             
             # Image section with reduced spacing
             if image_path and os.path.exists(image_path):
-                y_position -= 25  # Reduced spacing
+                y_position -= 30  # Increased spacing
                 img = Image.open(image_path)
                 img_width, img_height = img.size
                 
@@ -74,7 +78,7 @@ class PDFLayoutManager:
                 new_height = img_height * scale_factor
                 
                 # Limit image height
-                max_height = self.page_height * 0.3  # Reduced maximum height
+                max_height = self.page_height * 0.3
                 if new_height > max_height:
                     scale_factor = max_height / img_height
                     new_width = img_width * scale_factor
@@ -85,7 +89,7 @@ class PDFLayoutManager:
                             width=new_width, height=new_height,
                             preserveAspectRatio=True)
                 
-                y_position = y_position - new_height - 20  # Reduced spacing
+                y_position = y_position - new_height - 30  # Increased spacing
 
             # Sections with more compact layout
             sections = [
@@ -98,32 +102,60 @@ class PDFLayoutManager:
                     "Adapting Plans from PageWorkers to PageWorkers and..."
                 ]),
                 ("Next in Queue", [
-                    "Continued Updates to Executive Summary",
-                    "Shrinking Site Bloat"
-                ])
+                    "Speed Up Integration",
+                    "Shrinking Site Bloat & Reversing Technical Issues"
+                ]),
             ]
 
             for section_title, items in sections:
                 # Section header with reduced spacing
-                y_position -= 5
+                y_position -= 10
                 can.setFillColor(HexColor('#FFFFFF'))
-                can.roundRect(40, y_position - 5, self.page_width - 80, 25, 8, fill=1, stroke=1)
+                can.roundRect(40, y_position - 5, self.page_width - 80, 35, 8, fill=1, stroke=1)  # Increased height
                 
                 can.setFillColor(HexColor('#1A1A1A'))
-                can.setFont("Helvetica-Bold", 14)  # Smaller section headers
-                can.drawString(50, y_position, section_title)
-                y_position -= 25  # Reduced spacing
+                can.setFont("Helvetica-Bold", 20)  # Increased from 14
+                can.drawString(50, y_position + 5, section_title)  # Adjusted position
+                y_position -= 35  # Increased spacing
                 
-                # Bullet points with smaller text and tighter spacing
-                can.setFont("Helvetica", 10)  # Smaller bullet point text
+                # Bullet points with larger text
+                can.setFont("Helvetica", 16)  # Increased from 10
                 for item in items:
-                    # Bullet point
-                    can.circle(65, y_position + 3, 1.5, fill=1)
+                    # Larger bullet point
+                    can.circle(65, y_position + 5, 2.5, fill=1)  # Increased size and adjusted position
                     # Text
-                    can.drawString(80, y_position, item)
-                    y_position -= 18  # Reduced spacing between bullets
+                    can.drawString(85, y_position, item)
+                    y_position -= 25  # Increased spacing between bullets
                 
-                y_position -= 5  # Reduced spacing between sections
+                y_position -= 10  # Increased spacing between sections
+
+            # Add extra space before Current Key Priorities
+            y_position -= 30  # Increased spacing
+
+            # Current Key Priorities section
+            can.setFillColor(HexColor('#FFFFFF'))
+            can.roundRect(40, y_position - 5, self.page_width - 80, 35, 8, fill=1, stroke=1)  # Increased height
+            
+            can.setFillColor(HexColor('#1A1A1A'))
+            can.setFont("Helvetica-Bold", 20)  # Increased from 14
+            can.drawString(50, y_position + 5, "Current Key Priorities")  # Adjusted position
+            y_position -= 35  # Increased spacing
+
+            # Current Key Priorities items
+            priorities = [
+                "Wedding Content Calendar",
+                "Main Menu Render Review",
+                "Inconsistend PDPs",
+                "Internal Link Review",
+                "Core Web Vitals (Page Speed) Analysis",
+                "XML Sitemap Optimization"
+            ]
+
+            can.setFont("Helvetica", 16)  # Increased from 10
+            for item in priorities:
+                can.circle(65, y_position + 5, 2.5, fill=1)  # Increased size and adjusted position
+                can.drawString(85, y_position, item)
+                y_position -= 25  # Increased spacing between bullets
             
             can.save()
             packet.seek(0)
@@ -136,14 +168,15 @@ class PDFLayoutManager:
     def create_team_slide(self, team_image_path):
         try:
             packet = io.BytesIO()
+            # Use the page size from input PDF
             can = canvas.Canvas(packet, pagesize=(self.page_width, self.page_height))
             
             # White background
             can.setFillColor(HexColor('#FFFFFF'))
             can.rect(0, 0, self.page_width, self.page_height, fill=1)
             
-            # Add Glossary Header
-            y_position = self.page_height - 50
+            # Adjust starting position based on page height
+            y_position = self.page_height - (self.page_height * 0.06)  # 6% from top
             can.setFillColor(HexColor('#1A1A1A'))
             can.setFont("Helvetica-Bold", 20)
             can.drawString(50, y_position, "Glossary")
@@ -189,24 +222,14 @@ class PDFLayoutManager:
 
     def process_pdf(self, cover_image_path):
         try:
-            # Add first page
+            # Add our custom first page
             first_page = self.create_first_page(None, cover_image_path)
             if first_page:
                 self.writer.add_page(first_page.pages[0])
-            
-            # Add content pages
-            target_text = "Non-Branded KPI Trends"
-            start_page = None
-            
-            for i in range(len(self.reader.pages)):
-                text = self.reader.pages[i].extract_text()
-                if target_text in text:
-                    start_page = i
-                    break
-            
-            if start_page is not None:
-                for i in range(start_page, len(self.reader.pages)):
-                    self.writer.add_page(self.reader.pages[i])
+
+            # Add all pages from input PDF
+            for page in self.reader.pages:
+                self.writer.add_page(page)
             
             # Add team slide at the end
             inputs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'inputs')
