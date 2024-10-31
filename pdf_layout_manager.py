@@ -89,21 +89,17 @@ class PDFLayoutManager:
 
             # Sections with more compact layout
             sections = [
-                ("Quarter over Quarter Metrics", [
-                    "Non Branded Impressions & Clicks",
-                    "Branded Impressions & Clicks",
-                    "Brand vs. Non Brand conversion flow"
+                ("Work Done", [
+                    "Continued Integration of Platform",
+                    "Mapping Out and Categorizing the DB Site by Page Type"
                 ]),
-                ("Technical SEO", [
-                    "Indexable vs. Non Indexable",
-                    "Status Codes",
-                    "Sitemaps",
-                    "Page Speed Performance"
+                ("Outcomes", [
+                    "Creating Shared Executive Summary",
+                    "Adapting Plans from PageWorkers to PageWorkers and..."
                 ]),
-                ("Content SEO", [
-                    "Presence of Smart Keyword",
-                    "Impact of Internal Links on Ranking",
-                    "Internal Links by Segment"
+                ("Next in Queue", [
+                    "Continued Updates to Executive Summary",
+                    "Shrinking Site Bloat"
                 ])
             ]
 
